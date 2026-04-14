@@ -364,7 +364,7 @@ body{background:#1a0033;font-family:'VT323',monospace;color:#fff;min-height:100v
       <a class="cbtn" href="https://canva.link/pmsbky06six7m38" target="_blank">📄 VER MI CV</a>
     </div>
     <div class="statusbar">
-      <div class="spanel">🐱 Disponible para proyectos</div>
+      <div class="spanel" id="game-trigger" onclick="document.getElementById('minesweeper-window').style.display='flex'" style="cursor:pointer;animation:wipblink 2s infinite;">🐱 ¿Jugamos? (click!)</div>
       <div class="spanel">📍 Catamarca, ARG 🇦🇷</div>
       <div class="spanel">💜 Tania Quiroga 2025</div>
     </div>
@@ -455,6 +455,265 @@ window.addEventListener('scroll', () => {
     }
   } catch(e) {}
 })();
+</script>
+
+
+<style>
+#minesweeper-window {
+  display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:99999;background:#c0c0c0;border:3px solid;
+  border-color:#fff #808080 #808080 #fff;
+  box-shadow:4px 4px 0 #000;min-width:320px;flex-direction:column;
+  font-family:'Press Start 2P',monospace;
+}
+#ms-titlebar {
+  background:linear-gradient(90deg,#000080,#1084d0);color:#fff;
+  padding:4px 8px;font-size:7px;display:flex;justify-content:space-between;align-items:center;
+  cursor:move;user-select:none;
+}
+#ms-close {
+  width:16px;height:14px;border:2px solid;border-color:#fff #808080 #808080 #fff;
+  background:#c0c0c0;color:#000;font-size:10px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;font-family:Arial;font-weight:bold;
+}
+#ms-body { padding:10px; }
+#ms-toolbar {
+  display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap;
+}
+.ms-diff-btn {
+  background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;
+  font-family:'Press Start 2P',monospace;font-size:5px;padding:4px 6px;cursor:pointer;color:#000;
+}
+.ms-diff-btn:active,.ms-diff-btn.active{border-color:#808080 #fff #fff #808080;}
+#ms-info {
+  background:#c0c0c0;border:2px inset #808080;padding:4px 8px;
+  font-size:7px;display:flex;justify-content:space-between;margin-bottom:8px;
+}
+#ms-reset {
+  background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;
+  font-size:18px;cursor:pointer;padding:2px 8px;
+}
+#ms-reset:active{border-color:#808080 #fff #fff #808080;}
+#ms-grid {
+  display:inline-grid;gap:2px;background:#808080;padding:2px;border:2px inset #808080;
+}
+.ms-cell {
+  width:22px;height:22px;background:#c0c0c0;border:2px solid;
+  border-color:#fff #808080 #808080 #fff;
+  font-family:'Press Start 2P',monospace;font-size:8px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  user-select:none;color:#000;
+}
+.ms-cell:active{border-color:#808080 #fff #fff #808080;}
+.ms-cell.revealed{border:1px solid #808080;background:#c0c0c0;cursor:default;}
+.ms-cell.flagged{background:#c0c0c0;}
+.ms-cell.mine-hit{background:#f00;}
+.ms-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0.5);display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:2;
+}
+.ms-overlay.show{display:flex;}
+.ms-overlay-msg{
+  background:#c0c0c0;border:3px solid;border-color:#fff #808080 #808080 #fff;
+  padding:16px 20px;font-family:'Press Start 2P',monospace;font-size:9px;text-align:center;
+  color:#000;line-height:2;
+}
+.n1{color:#0000ff}.n2{color:#008000}.n3{color:#ff0000}.n4{color:#000080}
+.n5{color:#800000}.n6{color:#008080}.n7{color:#000000}.n8{color:#808080}
+#ms-counter{font-family:'VT323',monospace;font-size:24px;background:#000;color:#f00;padding:2px 6px;min-width:40px;text-align:center;}
+#ms-timer{font-family:'VT323',monospace;font-size:24px;background:#000;color:#f00;padding:2px 6px;min-width:40px;text-align:center;}
+#ms-grid-wrap{position:relative;}
+</style>
+
+<div id="minesweeper-window">
+  <div id="ms-titlebar">
+    <span>💣 Buscaminas — tania-portfolio</span>
+    <div id="ms-close" onclick="document.getElementById('minesweeper-window').style.display='none'">✕</div>
+  </div>
+  <div id="ms-body">
+    <div id="ms-toolbar">
+      <button class="ms-diff-btn active" id="btn-easy" onclick="setDiff('easy')">😊 Fácil</button>
+      <button class="ms-diff-btn" id="btn-medium" onclick="setDiff('medium')">😐 Medio</button>
+      <button class="ms-diff-btn" id="btn-hard" onclick="setDiff('hard')">😰 Difícil</button>
+    </div>
+    <div id="ms-info">
+      <div>💣 <span id="ms-counter">010</span></div>
+      <button id="ms-reset" onclick="initGame()">🙂</button>
+      <div>⏱ <span id="ms-timer">000</span></div>
+    </div>
+    <div id="ms-grid-wrap">
+      <div id="ms-grid"></div>
+      <div class="ms-overlay" id="ms-overlay">
+        <div class="ms-overlay-msg" id="ms-overlay-msg"></div>
+        <button class="ms-diff-btn" onclick="initGame();document.getElementById('ms-overlay').classList.remove('show')">🔄 JUGAR DE NUEVO</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// BUSCAMINAS
+let msConfig = {rows:9,cols:9,mines:10};
+let msBoard=[], msRevealed=[], msFlagged=[], msGameOver=false, msFirstClick=true;
+let msTimerInterval=null, msSeconds=0, msRemainingMines=10;
+
+function setDiff(d) {
+  document.querySelectorAll('.ms-diff-btn').forEach(b=>b.classList.remove('active'));
+  if(d==='easy'){msConfig={rows:9,cols:9,mines:10};document.getElementById('btn-easy').classList.add('active');}
+  else if(d==='medium'){msConfig={rows:16,cols:16,mines:40};document.getElementById('btn-medium').classList.add('active');}
+  else{msConfig={rows:16,cols:30,mines:99};document.getElementById('btn-hard').classList.add('active');}
+  initGame();
+}
+
+function initGame() {
+  clearInterval(msTimerInterval);
+  msSeconds=0; msGameOver=false; msFirstClick=true;
+  msRemainingMines=msConfig.mines;
+  document.getElementById('ms-timer').textContent='000';
+  document.getElementById('ms-counter').textContent=String(msRemainingMines).padStart(3,'0');
+  document.getElementById('ms-reset').textContent='🙂';
+  document.getElementById('ms-overlay').classList.remove('show');
+  const {rows,cols,mines}=msConfig;
+  msBoard=Array.from({length:rows},()=>Array(cols).fill(0));
+  msRevealed=Array.from({length:rows},()=>Array(cols).fill(false));
+  msFlagged=Array.from({length:rows},()=>Array(cols).fill(false));
+  renderGrid();
+}
+
+function placeMines(safeR,safeC) {
+  const {rows,cols,mines}=msConfig;
+  let placed=0;
+  while(placed<mines){
+    const r=Math.floor(Math.random()*rows);
+    const c=Math.floor(Math.random()*cols);
+    if(msBoard[r][c]===-1) continue;
+    if(Math.abs(r-safeR)<=1&&Math.abs(c-safeC)<=1) continue;
+    msBoard[r][c]=-1; placed++;
+  }
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) {
+    if(msBoard[r][c]===-1) continue;
+    let count=0;
+    for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&msBoard[nr][nc]===-1) count++;
+    }
+    msBoard[r][c]=count;
+  }
+}
+
+function renderGrid() {
+  const {rows,cols}=msConfig;
+  const grid=document.getElementById('ms-grid');
+  grid.style.gridTemplateColumns=`repeat(${cols},22px)`;
+  grid.innerHTML='';
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const cell=document.createElement('div');
+    cell.className='ms-cell';
+    cell.dataset.r=r; cell.dataset.c=c;
+    cell.addEventListener('click',()=>handleClick(r,c));
+    cell.addEventListener('contextmenu',(e)=>{e.preventDefault();handleFlag(r,c);});
+    grid.appendChild(cell);
+  }
+}
+
+function handleClick(r,c) {
+  if(msGameOver||msRevealed[r][c]||msFlagged[r][c]) return;
+  if(msFirstClick){
+    msFirstClick=false;
+    placeMines(r,c);
+    msTimerInterval=setInterval(()=>{
+      msSeconds=Math.min(msSeconds+1,999);
+      document.getElementById('ms-timer').textContent=String(msSeconds).padStart(3,'0');
+    },1000);
+  }
+  if(msBoard[r][c]===-1){
+    revealMines(r,c); return;
+  }
+  reveal(r,c);
+  checkWin();
+}
+
+function reveal(r,c) {
+  const {rows,cols}=msConfig;
+  if(r<0||r>=rows||c<0||c>=cols||msRevealed[r][c]||msFlagged[r][c]) return;
+  msRevealed[r][c]=true;
+  const cell=getCell(r,c);
+  cell.classList.add('revealed');
+  cell.style.border='1px solid #808080';
+  if(msBoard[r][c]>0){
+    cell.textContent=msBoard[r][c];
+    cell.classList.add('n'+msBoard[r][c]);
+  } else if(msBoard[r][c]===0){
+    for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++) reveal(r+dr,c+dc);
+  }
+}
+
+function handleFlag(r,c) {
+  if(msGameOver||msRevealed[r][c]) return;
+  msFlagged[r][c]=!msFlagged[r][c];
+  msRemainingMines+=msFlagged[r][c]?-1:1;
+  document.getElementById('ms-counter').textContent=String(Math.max(0,msRemainingMines)).padStart(3,'0');
+  const cell=getCell(r,c);
+  cell.textContent=msFlagged[r][c]?'🚩':'';
+}
+
+function revealMines(hitR,hitC) {
+  msGameOver=true;
+  clearInterval(msTimerInterval);
+  document.getElementById('ms-reset').textContent='😵';
+  const {rows,cols}=msConfig;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    if(msBoard[r][c]===-1){
+      const cell=getCell(r,c);
+      if(r===hitR&&c===hitC) cell.classList.add('mine-hit');
+      cell.textContent='💣';
+      cell.classList.add('revealed');
+    }
+  }
+  setTimeout(()=>{
+    document.getElementById('ms-overlay-msg').innerHTML='💣 BOOM! 💣<br><br>D'oh! Le erraste 🍩<br><span style="font-size:6px;color:#800000">Intentá de nuevo Tania</span>';
+    document.getElementById('ms-overlay').classList.add('show');
+  },600);
+}
+
+function checkWin() {
+  const {rows,cols,mines}=msConfig;
+  let unrevealed=0;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) if(!msRevealed[r][c]) unrevealed++;
+  if(unrevealed===mines){
+    msGameOver=true;
+    clearInterval(msTimerInterval);
+    document.getElementById('ms-reset').textContent='😎';
+    document.getElementById('ms-overlay-msg').innerHTML='🎉 ¡GANASTE! 🎉<br><br><span style="font-size:11px;">*junta los dedos*</span><br>Excelente... 😏<br><span style="font-size:6px;color:#008000">Tiempo: '+msSeconds+'s — Sr. Burns aprueba</span>';
+    document.getElementById('ms-overlay').classList.add('show');
+  }
+}
+
+function getCell(r,c){
+  return document.querySelector('[data-r="'+r+'"][data-c="'+c+'"]');
+}
+
+// Drag para mover la ventana
+(function(){
+  const win=document.getElementById('minesweeper-window');
+  const bar=document.getElementById('ms-titlebar');
+  let dragging=false,ox=0,oy=0;
+  bar.addEventListener('mousedown',(e)=>{
+    dragging=true;
+    const rect=win.getBoundingClientRect();
+    ox=e.clientX-rect.left; oy=e.clientY-rect.top;
+    win.style.transform='none';
+    win.style.left=rect.left+'px'; win.style.top=rect.top+'px';
+  });
+  document.addEventListener('mousemove',(e)=>{
+    if(!dragging) return;
+    win.style.left=(e.clientX-ox)+'px';
+    win.style.top=(e.clientY-oy)+'px';
+  });
+  document.addEventListener('mouseup',()=>dragging=false);
+})();
+
+initGame();
 </script>
 
 </body>
