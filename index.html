@@ -364,7 +364,7 @@ body{background:#1a0033;font-family:'VT323',monospace;color:#fff;min-height:100v
       <a class="cbtn" href="https://canva.link/pmsbky06six7m38" target="_blank">📄 VER MI CV</a>
     </div>
     <div class="statusbar">
-      <div class="spanel" id="game-trigger" onclick="document.getElementById('minesweeper-window').style.display='flex'" style="cursor:pointer;animation:wipblink 2s infinite;">🐱 ¿Jugamos? (click!)</div>
+      <div class="spanel" id="game-trigger" onclick="var w=document.getElementById('minesweeper-window');w.style.display='flex';if(!document.querySelector('.ms-cell'))initGame();" style="cursor:pointer;animation:wipblink 2s infinite;">🐱 ¿Jugamos? (click!)</div>
       <div class="spanel">📍 Catamarca, ARG 🇦🇷</div>
       <div class="spanel">💜 Tania Quiroga 2025</div>
     </div>
@@ -547,7 +547,7 @@ window.addEventListener('scroll', () => {
       <div id="ms-grid"></div>
       <div class="ms-overlay" id="ms-overlay">
         <div class="ms-overlay-msg" id="ms-overlay-msg"></div>
-        <button class="ms-diff-btn" onclick="initGame();document.getElementById('ms-overlay').classList.remove('show')">🔄 JUGAR DE NUEVO</button>
+        <button class="ms-diff-btn" onclick="document.getElementById('ms-overlay').classList.remove('show');initGame();">🔄 JUGAR DE NUEVO</button>
       </div>
     </div>
   </div>
@@ -715,7 +715,12 @@ function getCell(r,c){
   document.addEventListener('mouseup',()=>dragging=false);
 })();
 
-initGame();
+// Esperar a que el DOM esté completamente listo
+if(document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGame);
+} else {
+  setTimeout(initGame, 100);
+}
 </script>
 </body>
 </html>
